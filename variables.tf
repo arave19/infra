@@ -42,3 +42,13 @@ variable "enable_project_services" {
   type    = bool
   default = true
 }
+
+variable "enable_dataflow_runner" {
+  type    = bool
+  default = false
+}
+
+variable "dataflow_template_gcs_path" {
+  type    = string
+  default = ""
+}

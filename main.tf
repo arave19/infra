@@ -13,12 +13,14 @@ data "google_project" "current" {
 }
 
 locals {
-  name_prefix          = "${var.resource_prefix}-${var.environment}"
-  dataset_id           = replace("${var.resource_prefix}_${var.environment}", "-", "_")
-  image_bucket_name    = "${var.resource_prefix}-${var.project_id}-${var.environment}-images"
-  image_uri            = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_repository_id}/${var.image_name}:${var.image_tag}"
-  submissions_table_id = "${var.project_id}.${local.dataset_id}.form_submissions"
-  calls_table_id       = "${var.project_id}.${local.dataset_id}.call_attempts"
+  name_prefix           = "${var.resource_prefix}-${var.environment}"
+  dataset_id            = replace("${var.resource_prefix}_${var.environment}", "-", "_")
+  image_bucket_name     = "${var.resource_prefix}-${var.project_id}-${var.environment}-images"
+  bulk_bucket_name      = "${var.resource_prefix}-${var.project_id}-${var.environment}-bulk"
+  image_uri             = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_repository_id}/${var.image_name}:${var.image_tag}"
+  submissions_table_id  = "${var.project_id}.${local.dataset_id}.form_submissions"
+  calls_table_id        = "${var.project_id}.${local.dataset_id}.call_attempts"
+  bulk_uploads_table_id = "${var.project_id}.${local.dataset_id}.bulk_uploads"
 }
 
 resource "google_project_service" "services" {
@@ -26,6 +28,7 @@ resource "google_project_service" "services" {
     "artifactregistry.googleapis.com",
     "bigquery.googleapis.com",
     "cloudbuild.googleapis.com",
+    "dataflow.googleapis.com",
     "run.googleapis.com",
     "pubsub.googleapis.com",
     "storage.googleapis.com",
@@ -96,6 +99,22 @@ resource "google_storage_bucket_iam_member" "public_images_viewer" {
   member = "allUsers"
 }
 
+resource "google_storage_bucket" "bulk" {
+  name          = local.bulk_bucket_name
+  location      = var.region
+  force_destroy = false
+
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+
+  depends_on = [
+    google_project_service.services,
+  ]
+}
+
 resource "google_bigquery_dataset" "habi" {
   dataset_id                 = local.dataset_id
   location                   = "US"
@@ -122,6 +141,14 @@ resource "google_bigquery_table" "call_attempts" {
   schema = file("${path.module}/schemas/call_attempts.json")
 }
 
+resource "google_bigquery_table" "bulk_uploads" {
+  dataset_id          = google_bigquery_dataset.habi.dataset_id
+  table_id            = "bulk_uploads"
+  deletion_protection = true
+
+  schema = file("${path.module}/schemas/bulk_uploads.json")
+}
+
 resource "google_pubsub_topic" "submissions" {
   name = "${local.name_prefix}-submissions"
 
@@ -138,6 +165,11 @@ resource "google_service_account" "app" {
 resource "google_service_account" "worker" {
   account_id   = "${local.name_prefix}-worker"
   display_name = "Habi fake call worker Cloud Run service account"
+}
+
+resource "google_service_account" "dataflow" {
+  account_id   = "${local.name_prefix}-dataflow"
+  display_name = "Habi bulk phone Dataflow service account"
 }
 
 resource "google_service_account" "pubsub_push" {
@@ -167,6 +199,18 @@ resource "google_storage_bucket_iam_member" "app_images" {
   member = "serviceAccount:${google_service_account.app.email}"
 }
 
+resource "google_storage_bucket_iam_member" "app_bulk_writer" {
+  bucket = google_storage_bucket.bulk.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.app.email}"
+}
+
+resource "google_storage_bucket_iam_member" "dataflow_bulk_admin" {
+  bucket = google_storage_bucket.bulk.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.dataflow.email}"
+}
+
 resource "google_bigquery_dataset_iam_member" "app_bq_editor" {
   dataset_id = google_bigquery_dataset.habi.dataset_id
   role       = "roles/bigquery.dataEditor"
@@ -179,10 +223,40 @@ resource "google_bigquery_dataset_iam_member" "worker_bq_editor" {
   member     = "serviceAccount:${google_service_account.worker.email}"
 }
 
+resource "google_bigquery_dataset_iam_member" "dataflow_bq_editor" {
+  dataset_id = google_bigquery_dataset.habi.dataset_id
+  role       = "roles/bigquery.dataEditor"
+  member     = "serviceAccount:${google_service_account.dataflow.email}"
+}
+
 resource "google_pubsub_topic_iam_member" "app_publisher" {
   topic  = google_pubsub_topic.submissions.name
   role   = "roles/pubsub.publisher"
   member = "serviceAccount:${google_service_account.app.email}"
+}
+
+resource "google_pubsub_topic_iam_member" "dataflow_publisher" {
+  topic  = google_pubsub_topic.submissions.name
+  role   = "roles/pubsub.publisher"
+  member = "serviceAccount:${google_service_account.dataflow.email}"
+}
+
+resource "google_project_iam_member" "app_dataflow_developer" {
+  project = var.project_id
+  role    = "roles/dataflow.developer"
+  member  = "serviceAccount:${google_service_account.app.email}"
+}
+
+resource "google_service_account_iam_member" "app_can_run_dataflow_as_worker" {
+  service_account_id = google_service_account.dataflow.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.app.email}"
+}
+
+resource "google_project_iam_member" "dataflow_worker" {
+  project = var.project_id
+  role    = "roles/dataflow.worker"
+  member  = "serviceAccount:${google_service_account.dataflow.email}"
 }
 
 resource "google_cloud_run_v2_service" "app" {
@@ -212,8 +286,44 @@ resource "google_cloud_run_v2_service" "app" {
         value = local.calls_table_id
       }
       env {
+        name  = "BQ_BULK_UPLOADS_TABLE"
+        value = local.bulk_uploads_table_id
+      }
+      env {
         name  = "PUBSUB_TOPIC"
         value = google_pubsub_topic.submissions.id
+      }
+      env {
+        name  = "BULK_UPLOAD_BUCKET"
+        value = google_storage_bucket.bulk.name
+      }
+      env {
+        name  = "DATAFLOW_ENABLED"
+        value = tostring(var.enable_dataflow_runner)
+      }
+      env {
+        name  = "DATAFLOW_PROJECT_ID"
+        value = var.project_id
+      }
+      env {
+        name  = "DATAFLOW_REGION"
+        value = var.region
+      }
+      env {
+        name  = "DATAFLOW_TEMP_LOCATION"
+        value = "gs://${google_storage_bucket.bulk.name}/dataflow/temp"
+      }
+      env {
+        name  = "DATAFLOW_STAGING_LOCATION"
+        value = "gs://${google_storage_bucket.bulk.name}/dataflow/staging"
+      }
+      env {
+        name  = "DATAFLOW_TEMPLATE_GCS_PATH"
+        value = var.dataflow_template_gcs_path
+      }
+      env {
+        name  = "DATAFLOW_SERVICE_ACCOUNT_EMAIL"
+        value = google_service_account.dataflow.email
       }
 
       resources {

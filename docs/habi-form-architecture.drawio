@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net" modified="2026-08-27T00:00:00.000Z" version="24.7.17">
+  <diagram id="habi-form-dev" name="Habi Form Dev Architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="gcp" value="Google Cloud Platform - aravel-344022 / us-central1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#d0d7de;fontStyle=1;startSize=34;" vertex="1" parent="1">
+          <mxGeometry x="30" y="30" width="1240" height="760" as="geometry"/>
+        </mxCell>
+        <mxCell id="dev" value="Developer Workstation" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e6f7ff;strokeColor=#91d5ff;fontStyle=1;startSize=30;" vertex="1" parent="1">
+          <mxGeometry x="60" y="650" width="1160" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="apprepo" value="Git repo: app&#xa;Flask + UI + Docker + tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="90" y="690" width="190" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="infrarepo" value="Git repo: infra&#xa;Terraform + schemas + tests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="310" y="690" width="200" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="terraform" value="Terraform&#xa;bootstrap + main stack" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede7f6;strokeColor=#7e57c2;" vertex="1" parent="1">
+          <mxGeometry x="540" y="690" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudbuild" value="Cloud Build&#xa;build image" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7e6;strokeColor=#fa8c16;" vertex="1" parent="1">
+          <mxGeometry x="760" y="690" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="artifact" value="Artifact Registry&#xa;habi-form-app:&lt;tag&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7e6;strokeColor=#fa8c16;" vertex="1" parent="1">
+          <mxGeometry x="950" y="690" width="210" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="cloudrunapp" value="Cloud Run App&#xa;habi-form-dev-app&#xa;/home /save /bulk /ocr" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ff;strokeColor=#1677ff;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="90" y="120" width="210" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="user" value="Usuario&#xa;Formulario + CSV/JSON" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="100" y="300" width="120" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="storageimages" value="Cloud Storage&#xa;evidencias fotograficas&#xa;bucket publico para demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f6ffed;strokeColor=#52c41a;" vertex="1" parent="1">
+          <mxGeometry x="380" y="100" width="220" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="storagebulk" value="Cloud Storage&#xa;bulk/Dataflow&#xa;CSV JSON temp staging" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f6ffed;strokeColor=#52c41a;" vertex="1" parent="1">
+          <mxGeometry x="380" y="205" width="220" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="bigquery" value="BigQuery&#xa;form_submissions&#xa;bulk_uploads&#xa;call_attempts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6fffb;strokeColor=#13c2c2;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="105" width="210" height="105" as="geometry"/>
+        </mxCell>
+        <mxCell id="pubsub" value="Pub/Sub Topic&#xa;habi-form-dev-submissions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff1f0;strokeColor=#ff4d4f;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="315" width="210" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="dataflow" value="Cloud Dataflow&#xa;bulk_phone_pipeline.py&#xa;complete / batch / chunk" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9f0ff;strokeColor=#9254de;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="225" width="210" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="worker" value="Cloud Run Worker&#xa;habi-form-dev-call-worker&#xa;fake call process" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6f4ff;strokeColor=#1677ff;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="285" width="210" height="85" as="geometry"/>
+        </mxCell>
+        <mxCell id="tfstate" value="GCS tfstate&#xa;habi-form-tfstate...&#xa;public only for demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffbe6;strokeColor=#d4b106;" vertex="1" parent="1">
+          <mxGeometry x="760" y="575" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="bqnote" value="submission_id ties form records, photo refs and call attempts" style="shape=note;whiteSpace=wrap;html=1;fillColor=#ffffcc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="980" y="115" width="210" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_user_app" value="GET /home&#xa;POST form or bulk file" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="user" target="cloudrunapp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_app_images" value="photo upload" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cloudrunapp" target="storageimages">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_app_bulk" value="CSV/JSON source" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cloudrunapp" target="storagebulk">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_app_bq" value="single forms + bulk audit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cloudrunapp" target="bigquery">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_app_pubsub" value="dev fallback publishes per record" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="cloudrunapp" target="pubsub">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_bulk_dataflow" value="input file + strategy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="storagebulk" target="dataflow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_dataflow_bq" value="validated submissions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="dataflow" target="bigquery">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_dataflow_pubsub" value="one message per contact" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="dataflow" target="pubsub">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_pubsub_worker" value="push /process_call" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="pubsub" target="worker">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_worker_bq" value="call result" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="worker" target="bigquery">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_app_cloudbuild" value="build source" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="apprepo" target="cloudbuild">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_infra_tf" value="terraform apply" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="infrarepo" target="terraform">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_tf_state" value="remote state" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="terraform" target="tfstate">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_build_artifact" value="push docker image" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="cloudbuild" target="artifact">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_artifact_run" value="deploy image" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="artifact" target="cloudrunapp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

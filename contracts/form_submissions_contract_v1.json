@@ -1,0 +1,73 @@
+{
+  "contract_name": "form_submissions_consumption_contract",
+  "version": "1.0.0",
+  "owner": "data-platform",
+  "domain": "habi-lead-contactability",
+  "description": "Contrato de datos para la capa de consumo de registros capturados por formulario individual y cargue masivo.",
+  "freshness": {
+    "expected_update": "near-real-time for form submissions, batch for bulk uploads",
+    "maximum_accepted_delay_minutes": 60
+  },
+  "primary_key": ["submission_id"],
+  "fields": [
+    {
+      "name": "submission_id",
+      "type": "STRING",
+      "mode": "REQUIRED",
+      "constraints": ["not_null", "unique"]
+    },
+    {
+      "name": "created_at",
+      "type": "TIMESTAMP",
+      "mode": "REQUIRED",
+      "constraints": ["not_null"]
+    },
+    {
+      "name": "nombre",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "descripcion",
+      "type": "STRING",
+      "mode": "NULLABLE"
+    },
+    {
+      "name": "latitude",
+      "type": "FLOAT",
+      "mode": "NULLABLE",
+      "constraints": ["between_-90_and_90"]
+    },
+    {
+      "name": "longitude",
+      "type": "FLOAT",
+      "mode": "NULLABLE",
+      "constraints": ["between_-180_and_180"]
+    },
+    {
+      "name": "telefonos",
+      "type": "STRING",
+      "mode": "REPEATED",
+      "constraints": ["max_5_values", "8_to_15_digits_after_normalization"]
+    },
+    {
+      "name": "photo_url",
+      "type": "STRING",
+      "mode": "NULLABLE",
+      "constraints": ["gcs_uri_when_present"]
+    },
+    {
+      "name": "source",
+      "type": "STRING",
+      "mode": "NULLABLE",
+      "accepted_values": ["habi-form", "bulk-upload", "bulk-upload-dataflow"]
+    }
+  ],
+  "quality_checks": [
+    "submission_id must be present",
+    "created_at must be present",
+    "at least one phone is recommended for call activation",
+    "coordinates must be valid when present",
+    "source must identify the ingestion channel"
+  ]
+}
